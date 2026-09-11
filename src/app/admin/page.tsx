@@ -68,10 +68,10 @@ export default function AdminScreen() {
     setView('edit');
   };
 
-  const handleEliminarCita = async (id: string, e?: React.MouseEvent) => {
+  const handleEliminarCita = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     if(confirm("¿Estás seguro de eliminar esta cita?")) {
-      await deleteDoc(doc(db, 'citas', id));
+      deleteDoc(doc(db, 'citas', id)); // Fire and forget (ultra rápido)
     }
   };
 
@@ -89,7 +89,7 @@ export default function AdminScreen() {
     return colors[hash % colors.length] || 'blue';
   };
 
-  const handleGuardarEdicion = async () => {
+  const handleGuardarEdicion = () => {
     if (!editingCita) return;
     const preguntasSaneadas = editingCita.preguntas.filter(p => p.texto.trim() !== '');
     
@@ -97,8 +97,8 @@ export default function AdminScreen() {
     const colorAutomatico = getAutoColor(editingCita.especialidad || editingCita.doctorNombre || 'General');
     const citaFinal = { ...editingCita, preguntas: preguntasSaneadas, color: colorAutomatico };
 
-    // ⚡️ Guardar en Firestore
-    await setDoc(doc(db, 'citas', citaFinal.id), citaFinal);
+    // ⚡️ Guardar en Firestore (Sin "await" para que sea instantáneo)
+    setDoc(doc(db, 'citas', citaFinal.id), citaFinal);
     
     setView('list');
     setEditingCita(null);

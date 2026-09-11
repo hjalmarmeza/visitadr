@@ -11,22 +11,25 @@ const firebaseConfig = {
   measurementId: "G-P2XB0F537H"
 };
 
-let app;
+// Singleton pattern para Next.js (evita inicializar multiples veces)
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
 let db: any;
 
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-  if (typeof window !== 'undefined') {
-    // ⚡️ Habilitar persistencia offline SOLO si es la primera vez que se carga
+if (typeof window !== 'undefined') {
+  // ⚡️ PASO 3: Activamos el Modo "Sin Conexión"
+  // Envolvemos en try/catch porque el Fast Refresh de Next.js en desarrollo 
+  // intenta ejecutar este archivo varias veces y Firebase lanza error y pantalla blanca.
+  try {
     db = initializeFirestore(app, {
       localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
     });
-  } else {
+  } catch (e: any) {
+    // Si ya estaba inicializado, simplemente lo llamamos
     db = getFirestore(app);
   }
 } else {
-  // Si Next.js recarga el componente (Fast Refresh), usamos la instancia existente
-  app = getApp();
+  // Server-side
   db = getFirestore(app);
 }
 

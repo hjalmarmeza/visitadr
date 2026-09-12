@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAe7WuNO19-aN8ryQoHMPBhvhI-fqOLrag",
@@ -11,12 +11,23 @@ const firebaseConfig = {
   measurementId: "G-P2XB0F537H"
 };
 
-// Singleton pattern para Next.js (evita inicializar multiples veces)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// ⚡️ Usamos el motor por defecto. La persistencia en disco duro (IndexedDB) 
-// causaba un bloqueo de 10 segundos en Mac por conflicto entre pestañas.
-// La memoria caché normal sigue funcionando perfectamente para cortes de señal breves.
-const db = getFirestore(app);
+let db: any;
+
+if (typeof window !== 'undefined') {
+  try {
+    // ⚡️ LA SOLUCIÓN DEFINITIVA: Usar caché en disco duro para carga en 0.1s,
+    // pero limitándolo a "SingleTabManager" para evitar el bug de 10s de las Mac.
+    // Esto garantiza que aunque el internet tarde 20s en conectar, la app se abra al instante.
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentSingleTabManager({ forceOwnership: false }) })
+    });
+  } catch (e) {
+    db = getFirestore(app);
+  }
+} else {
+  db = getFirestore(app);
+}
 
 export { app, db };

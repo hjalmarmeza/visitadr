@@ -1,24 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function Home() {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-
-  // ⚡️ TRUCO MAESTRO: Descargar las pantallas pesadas (Firebase) en segundo plano
-  // mientras el usuario todavía está viendo la pantalla de inicio o escribiendo la contraseña.
-  useEffect(() => {
-    router.prefetch('/admin');
-    router.prefetch('/chat');
-  }, [router]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true); // ⚡️ Feedback inmediato
+    setIsLoading(true);
     
     // Obtener fecha actual en la zona horaria de Lima (UTC-5)
     const d = new Date();
@@ -31,11 +22,9 @@ export default function Home() {
     const validDoctorPin = `${day}${month}${year}`;
 
     if (pin === 'Admin') {
-      // Usamos setTimeout para forzar a React a pintar el estado "Conectando..." 
-      // antes de que Next.js congele la pantalla descargando la nueva página.
-      setTimeout(() => router.push('/admin'), 50);
+      window.location.href = '/admin';
     } else if (pin === validDoctorPin) {
-      setTimeout(() => router.push('/chat'), 50);
+      window.location.href = '/chat';
     } else {
       setError('El código ingresado es incorrecto.');
       setIsLoading(false);

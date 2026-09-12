@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, initializeFirestore, memoryLocalCache } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAe7WuNO19-aN8ryQoHMPBhvhI-fqOLrag",
@@ -17,12 +17,13 @@ let db: any;
 
 if (typeof window !== 'undefined') {
   try {
-    // ⚡️ MODO EXTREMO: Desactivamos el uso del disco duro de la computadora por completo.
-    // Además, forzamos "Long Polling" para evitar que el antivirus de la Mac bloquee los WebSockets
-    // (el bloqueo de WebSockets es la causa exacta de la espera de 30 segundos en redes cerradas).
+    // ⚡️ SOLUCIÓN REAL: Volvemos al Caché de Disco (pero sin bloqueo de pestañas).
+    // ¿Por qué? Porque tu Mac tiene un problema de red al conectar con Google (probablemente 
+    // IPv6 timeout o un firewall) que siempre tarda 20 segundos.
+    // Usando el caché de disco, el panel carga al instante mientras el timeout ocurre en el fondo.
     db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
-      localCache: memoryLocalCache()
+      localCache: persistentLocalCache({ tabManager: persistentSingleTabManager({ forceOwnership: false }) })
     });
   } catch (e) {
     db = getFirestore(app);

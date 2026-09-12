@@ -16,18 +16,12 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 let db: any;
 
 if (typeof window !== 'undefined') {
-  try {
-    // ⚡️ SOLUCIÓN REAL: Volvemos al Caché de Disco (pero sin bloqueo de pestañas).
-    // ¿Por qué? Porque tu Mac tiene un problema de red al conectar con Google (probablemente 
-    // IPv6 timeout o un firewall) que siempre tarda 20 segundos.
-    // Usando el caché de disco, el panel carga al instante mientras el timeout ocurre en el fondo.
-    db = initializeFirestore(app, {
-      experimentalForceLongPolling: true,
-      localCache: persistentLocalCache({ tabManager: persistentSingleTabManager({ forceOwnership: false }) })
-    });
-  } catch (e) {
-    db = getFirestore(app);
-  }
+  // Inicialización directa para evitar que un try/catch silencioso
+  // caiga al getFirestore() por defecto que no tiene caché.
+  db = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+    localCache: persistentLocalCache()
+  });
 } else {
   db = getFirestore(app);
 }

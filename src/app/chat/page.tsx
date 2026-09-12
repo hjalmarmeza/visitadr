@@ -249,7 +249,7 @@ export default function DoctorViewScreen() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative">
         <div className="w-20 h-20 bg-white rounded-2xl shadow-xl flex items-center justify-center mb-6 animate-bounce">
           <svg className="animate-spin h-10 w-10 text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -257,7 +257,13 @@ export default function DoctorViewScreen() {
           </svg>
         </div>
         <h2 className="text-2xl font-bold text-slate-800 mb-2">Preparando Consultorio...</h2>
-        <p className="text-slate-500 text-center">Conectando con la base de datos de forma segura</p>
+        <p className="text-slate-500 text-center mb-8">Conectando con la base de datos de forma segura</p>
+
+        {/* PANEL DE DIAGNÓSTICO ESTÁTICO (Chat no tiene estado local de logs para evitar ensuciar el componente) */}
+        <div className="w-full max-w-md bg-black/80 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl absolute bottom-10 left-1/2 -translate-x-1/2">
+          <h3 className="text-white border-b border-white/20 pb-2 mb-2">🔴 DEBUG MODE ACTIVO</h3>
+          <div>Esperando respuesta de Firebase...</div>
+        </div>
       </div>
     );
   }

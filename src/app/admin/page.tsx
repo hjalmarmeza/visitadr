@@ -23,6 +23,12 @@ export default function AdminScreen() {
   const [editingCita, setEditingCita] = useState<Cita | null>(null);
   const [activeTab, setActiveTab] = useState<'pendientes' | 'historial'>('pendientes');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
+
+  const addLog = (msg: string) => {
+    const t = new Date().toISOString().split('T')[1].substring(0, 8);
+    setLogs(prev => [...prev, `[${t}] ${msg}`]);
+  };
 
   const getTodayLimaStr = () => {
     const d = new Date();
@@ -34,14 +40,26 @@ export default function AdminScreen() {
   };
 
   useEffect(() => {
-    // ⚡️ Firestore Listener (Sincronización en Tiempo Real)
-    const unsubscribe = onSnapshot(collection(db, 'citas'), (snapshot) => {
-      const fetchedCitas = snapshot.docs.map(doc => doc.data() as Cita);
-      setCitas(fetchedCitas);
-      setIsLoaded(true);
-    });
-    
-    return () => unsubscribe();
+    addLog('Componente Admin montado en navegador');
+    addLog('Iniciando conexión a Firebase...');
+    const startTime = Date.now();
+
+    try {
+      // ⚡️ Firestore Listener (Sincronización en Tiempo Real)
+      const unsubscribe = onSnapshot(collection(db, 'citas'), (snapshot) => {
+        const elapsed = Date.now() - startTime;
+        addLog(`✅ Datos recibidos en ${elapsed}ms`);
+        const fetchedCitas = snapshot.docs.map(doc => doc.data() as Cita);
+        setCitas(fetchedCitas);
+        setIsLoaded(true);
+      }, (error) => {
+        addLog(`❌ Error Firestore: ${error.message}`);
+      });
+      
+      return () => unsubscribe();
+    } catch (err: any) {
+      addLog(`❌ Crash Sincrónico: ${err.message}`);
+    }
   }, []);
 
   const handleCrearNuevaCita = () => {
@@ -106,7 +124,7 @@ export default function AdminScreen() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative">
         <div className="w-20 h-20 bg-white rounded-2xl shadow-xl flex items-center justify-center mb-6 animate-bounce">
           <svg className="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -114,7 +132,15 @@ export default function AdminScreen() {
           </svg>
         </div>
         <h2 className="text-2xl font-bold text-slate-800 mb-2">Conectando...</h2>
-        <p className="text-slate-500 text-center">Sincronizando con la nube de Firebase de forma segura</p>
+        <p className="text-slate-500 text-center mb-8">Sincronizando con la nube de Firebase de forma segura</p>
+        
+        {/* PANEL DE DIAGNÓSTICO */}
+        <div className="w-full max-w-md bg-black/80 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl absolute bottom-10 left-1/2 -translate-x-1/2">
+          <h3 className="text-white border-b border-white/20 pb-2 mb-2">🔴 DIAGNÓSTICO EN VIVO:</h3>
+          {logs.map((log, i) => (
+            <div key={i} className="mb-1">{log}</div>
+          ))}
+        </div>
       </div>
     );
   }

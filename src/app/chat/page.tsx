@@ -21,6 +21,12 @@ export default function DoctorViewScreen() {
   const [citas, setCitas] = useState<Cita[]>([]);
   const [selectedCitaId, setSelectedCitaId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
+
+  const addLog = (msg: string) => {
+    const t = new Date().toISOString().split('T')[1].substring(0, 8);
+    setLogs(prev => [...prev, `[${t}] ${msg}`]);
+  };
 
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -29,6 +35,10 @@ export default function DoctorViewScreen() {
   const targetInputRef = useRef<{ tipo: 'pregunta' | 'recomendacion', id?: string } | null>(null);
 
   useEffect(() => {
+    addLog('Componente Chat montado en navegador');
+    addLog('Iniciando conexión a Firebase...');
+    const startTime = Date.now();
+
     const getTodayLimaStr = () => {
       const d = new Date();
       const limaTime = new Date(d.toLocaleString('en-US', { timeZone: 'America/Lima' }));
@@ -38,9 +48,12 @@ export default function DoctorViewScreen() {
       return `${year}-${month}-${day}`;
     };
 
-    // ⚡️ Firestore Listener (Sincronización en Tiempo Real con Admin y Pacientes)
-    const unsubscribe = onSnapshot(collection(db, 'citas'), (snapshot) => {
-      const parsed = snapshot.docs.map(doc => doc.data() as Cita);
+    try {
+      // ⚡️ Firestore Listener (Sincronización en Tiempo Real con Admin y Pacientes)
+      const unsubscribe = onSnapshot(collection(db, 'citas'), (snapshot) => {
+        const elapsed = Date.now() - startTime;
+        addLog(`✅ Datos recibidos en ${elapsed}ms`);
+        const parsed = snapshot.docs.map(doc => doc.data() as Cita);
       const hoy = getTodayLimaStr();
       const citasDeHoy = parsed.filter(c => c.fecha === hoy);
       
@@ -60,9 +73,12 @@ export default function DoctorViewScreen() {
         });
       });
       setIsLoaded(true);
-    });
-    
-    return () => unsubscribe();
+      });
+      
+      return () => unsubscribe();
+    } catch (err: any) {
+      addLog(`❌ Crash Sincrónico: ${err.message}`);
+    }
   }, []);
 
   useEffect(() => {
@@ -258,19 +274,20 @@ export default function DoctorViewScreen() {
         </div>
         <h2 className="text-2xl font-bold text-slate-800 mb-2">Preparando Consultorio...</h2>
         <p className="text-slate-500 text-center mb-8">Conectando con la base de datos de forma segura</p>
-
-        {/* PANEL DE DIAGNÓSTICO ESTÁTICO (Chat no tiene estado local de logs para evitar ensuciar el componente) */}
-        <div className="w-full max-w-md bg-black/80 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl absolute bottom-10 left-1/2 -translate-x-1/2">
-          <h3 className="text-white border-b border-white/20 pb-2 mb-2">🔴 DEBUG MODE ACTIVO</h3>
-          <div>Esperando respuesta de Firebase...</div>
-        </div>
       </div>
     );
   }
 
   if (!selectedCitaId) {
     return (
-    <div className="min-h-screen bg-transparent flex flex-col font-sans">
+    <div className="min-h-screen bg-transparent flex flex-col font-sans relative">
+        {/* PANEL DE DIAGNÓSTICO (Persistente después de cargar) */}
+        <div className="fixed z-50 bottom-4 right-4 max-w-xs bg-black/90 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl">
+          <h3 className="text-white border-b border-white/20 pb-1 mb-2 font-bold">🔴 LOGS (Envía foto de esto):</h3>
+          {logs.map((log, i) => (
+            <div key={i} className="mb-1">{log}</div>
+          ))}
+        </div>
         <header className="bg-gradient-to-r from-blue-600 to-teal-500 text-white p-8 shadow-[0_15px_40px_-10px_rgba(20,184,166,0.4)] rounded-b-[2.5rem] mb-10 flex justify-between items-center relative z-10 border-b border-teal-400/30">
           <div>
             <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">Menú de Doctores</h1>

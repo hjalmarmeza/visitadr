@@ -133,26 +133,25 @@ export default function AdminScreen() {
         </div>
         <h2 className="text-2xl font-bold text-slate-800 mb-2">Conectando...</h2>
         <p className="text-slate-500 text-center mb-8">Sincronizando con la nube de Firebase de forma segura</p>
-        
-        {/* PANEL DE DIAGNÓSTICO */}
-        <div className="w-full max-w-md bg-black/80 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl absolute bottom-10 left-1/2 -translate-x-1/2">
-          <h3 className="text-white border-b border-white/20 pb-2 mb-2">🔴 DIAGNÓSTICO EN VIVO:</h3>
-          {logs.map((log, i) => (
-            <div key={i} className="mb-1">{log}</div>
-          ))}
-        </div>
       </div>
     );
   }
 
   const todayStr = getTodayLimaStr();
   const citasPendientes = citas.filter(c => c.fecha >= todayStr);
-  const citasPasadas = citas.filter(c => c.fecha < todayStr);
+  const historialCitas = citas.filter(c => c.fecha < todayStr);
   
-  const displayCitas = activeTab === 'pendientes' ? citasPendientes : citasPasadas;
+  const displayCitas = activeTab === 'pendientes' ? citasPendientes : historialCitas;
 
   return (
-    <div className="min-h-screen bg-transparent flex flex-col font-sans">
+    <div className="min-h-screen bg-transparent flex flex-col font-sans relative">
+      {/* PANEL DE DIAGNÓSTICO (Persistente después de cargar) */}
+      <div className="fixed z-50 bottom-4 right-4 max-w-xs bg-black/90 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl">
+        <h3 className="text-white border-b border-white/20 pb-1 mb-2 font-bold">🔴 LOGS (Envía foto de esto):</h3>
+        {logs.map((log, i) => (
+          <div key={i} className="mb-1">{log}</div>
+        ))}
+      </div>
         <header className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-8 shadow-[0_15px_40px_-10px_rgba(79,70,229,0.4)] rounded-b-[2.5rem] mb-10 flex justify-between items-center relative z-10 border-b border-indigo-400/30">
           <div>
             <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">Panel Familiar</h1>

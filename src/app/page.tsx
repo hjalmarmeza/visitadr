@@ -24,9 +24,11 @@ export default function Home() {
     const validDoctorPin = `${day}${month}${year}`;
 
     if (pin === 'Admin') {
-      router.push('/admin');
+      // Usamos setTimeout para forzar a React a pintar el estado "Conectando..." 
+      // antes de que Next.js congele la pantalla descargando la nueva página.
+      setTimeout(() => router.push('/admin'), 50);
     } else if (pin === validDoctorPin) {
-      router.push('/chat');
+      setTimeout(() => router.push('/chat'), 50);
     } else {
       setError('El código ingresado es incorrecto.');
       setIsLoading(false);

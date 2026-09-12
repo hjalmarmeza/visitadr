@@ -23,12 +23,6 @@ export default function AdminScreen() {
   const [editingCita, setEditingCita] = useState<Cita | null>(null);
   const [activeTab, setActiveTab] = useState<'pendientes' | 'historial'>('pendientes');
   const [isLoaded, setIsLoaded] = useState(false);
-  const [logs, setLogs] = useState<string[]>([]);
-
-  const addLog = (msg: string) => {
-    const t = new Date().toISOString().split('T')[1].substring(0, 8);
-    setLogs(prev => [...prev, `[${t}] ${msg}`]);
-  };
 
   const getTodayLimaStr = () => {
     const d = new Date();
@@ -40,25 +34,19 @@ export default function AdminScreen() {
   };
 
   useEffect(() => {
-    addLog('Componente Admin montado en navegador');
-    addLog('Iniciando conexión a Firebase...');
-    const startTime = Date.now();
-
     try {
       // ⚡️ Firestore Listener (Sincronización en Tiempo Real)
       const unsubscribe = onSnapshot(collection(db, 'citas'), (snapshot) => {
-        const elapsed = Date.now() - startTime;
-        addLog(`✅ Datos recibidos en ${elapsed}ms`);
         const fetchedCitas = snapshot.docs.map(doc => doc.data() as Cita);
         setCitas(fetchedCitas);
         setIsLoaded(true);
       }, (error) => {
-        addLog(`❌ Error Firestore: ${error.message}`);
+        console.error("Error Firebase:", error.message);
       });
       
       return () => unsubscribe();
     } catch (err: any) {
-      addLog(`❌ Crash Sincrónico: ${err.message}`);
+      console.error("Crash síncrono:", err.message);
     }
   }, []);
 
@@ -132,13 +120,6 @@ export default function AdminScreen() {
 
   return (
     <div className="min-h-screen bg-transparent flex flex-col font-sans relative">
-      {/* PANEL DE DIAGNÓSTICO */}
-      <div className="fixed z-50 bottom-4 right-4 max-w-xs bg-black/90 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl">
-        <h3 className="text-white border-b border-white/20 pb-1 mb-2 font-bold">🔴 LOGS (IPv6 Timeout Traker):</h3>
-        {logs.map((log, i) => (
-          <div key={i} className="mb-1">{log}</div>
-        ))}
-      </div>
         <header className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-8 shadow-[0_15px_40px_-10px_rgba(79,70,229,0.4)] rounded-b-[2.5rem] mb-10 flex justify-between items-center relative z-10 border-b border-indigo-400/30">
           <div>
             <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">Panel Familiar</h1>

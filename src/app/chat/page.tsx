@@ -21,12 +21,6 @@ export default function DoctorViewScreen() {
   const [citas, setCitas] = useState<Cita[]>([]);
   const [selectedCitaId, setSelectedCitaId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [logs, setLogs] = useState<string[]>([]);
-
-  const addLog = (msg: string) => {
-    const t = new Date().toISOString().split('T')[1].substring(0, 8);
-    setLogs(prev => [...prev, `[${t}] ${msg}`]);
-  };
 
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -35,10 +29,6 @@ export default function DoctorViewScreen() {
   const targetInputRef = useRef<{ tipo: 'pregunta' | 'recomendacion', id?: string } | null>(null);
 
   useEffect(() => {
-    addLog('Componente Chat montado en navegador');
-    addLog('Iniciando conexión a Firebase...');
-    const startTime = Date.now();
-
     const getTodayLimaStr = () => {
       const d = new Date();
       const limaTime = new Date(d.toLocaleString('en-US', { timeZone: 'America/Lima' }));
@@ -51,8 +41,6 @@ export default function DoctorViewScreen() {
     try {
       // ⚡️ Firestore Listener (Sincronización en Tiempo Real con Admin y Pacientes)
       const unsubscribe = onSnapshot(collection(db, 'citas'), (snapshot) => {
-        const elapsed = Date.now() - startTime;
-        addLog(`✅ Datos recibidos en ${elapsed}ms`);
         const parsed = snapshot.docs.map(doc => doc.data() as Cita);
       const hoy = getTodayLimaStr();
       const citasDeHoy = parsed.filter(c => c.fecha === hoy);
@@ -77,7 +65,7 @@ export default function DoctorViewScreen() {
       
       return () => unsubscribe();
     } catch (err: any) {
-      addLog(`❌ Crash Sincrónico: ${err.message}`);
+      console.error("Crash síncrono:", err.message);
     }
   }, []);
 
@@ -268,13 +256,6 @@ export default function DoctorViewScreen() {
   if (!selectedCitaId) {
     return (
     <div className="min-h-screen bg-transparent flex flex-col font-sans relative">
-        {/* PANEL DE DIAGNÓSTICO (Persistente después de cargar) */}
-        <div className="fixed z-50 bottom-4 right-4 max-w-xs bg-black/90 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl">
-          <h3 className="text-white border-b border-white/20 pb-1 mb-2 font-bold">🔴 LOGS (Envía foto de esto):</h3>
-          {logs.map((log, i) => (
-            <div key={i} className="mb-1">{log}</div>
-          ))}
-        </div>
         <header className="bg-gradient-to-r from-blue-600 to-teal-500 text-white p-8 shadow-[0_15px_40px_-10px_rgba(20,184,166,0.4)] rounded-b-[2.5rem] mb-10 flex justify-between items-center relative z-10 border-b border-teal-400/30">
           <div>
             <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">Menú de Doctores</h1>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
@@ -8,6 +8,13 @@ export default function Home() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  // ⚡️ TRUCO MAESTRO: Descargar las pantallas pesadas (Firebase) en segundo plano
+  // mientras el usuario todavía está viendo la pantalla de inicio o escribiendo la contraseña.
+  useEffect(() => {
+    router.prefetch('/admin');
+    router.prefetch('/chat');
+  }, [router]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();

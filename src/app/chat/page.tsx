@@ -274,6 +274,14 @@ export default function DoctorViewScreen() {
         </div>
         <h2 className="text-2xl font-bold text-slate-800 mb-2">Preparando Consultorio...</h2>
         <p className="text-slate-500 text-center mb-8">Conectando con la base de datos de forma segura</p>
+        
+        {/* PANEL DE DIAGNÓSTICO (Visible durante la carga) */}
+        <div className="w-full max-w-md bg-black/80 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl absolute bottom-10 left-1/2 -translate-x-1/2">
+          <h3 className="text-white border-b border-white/20 pb-2 mb-2 font-bold">🔴 DIAGNÓSTICO EN VIVO:</h3>
+          {logs.length === 0 ? <div className="animate-pulse">Cargando diagnóstico...</div> : logs.map((log, i) => (
+            <div key={i} className="mb-1">{log}</div>
+          ))}
+        </div>
       </div>
     );
   }

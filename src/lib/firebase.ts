@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAe7WuNO19-aN8ryQoHMPBhvhI-fqOLrag",
@@ -14,23 +14,9 @@ const firebaseConfig = {
 // Singleton pattern para Next.js (evita inicializar multiples veces)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-let db: any;
-
-if (typeof window !== 'undefined') {
-  // ⚡️ PASO 3: Activamos el Modo "Sin Conexión"
-  // Envolvemos en try/catch porque el Fast Refresh de Next.js en desarrollo 
-  // intenta ejecutar este archivo varias veces y Firebase lanza error y pantalla blanca.
-  try {
-    db = initializeFirestore(app, {
-      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-    });
-  } catch (e: any) {
-    // Si ya estaba inicializado, simplemente lo llamamos
-    db = getFirestore(app);
-  }
-} else {
-  // Server-side
-  db = getFirestore(app);
-}
+// ⚡️ Usamos el motor por defecto. La persistencia en disco duro (IndexedDB) 
+// causaba un bloqueo de 10 segundos en Mac por conflicto entre pestañas.
+// La memoria caché normal sigue funcionando perfectamente para cortes de señal breves.
+const db = getFirestore(app);
 
 export { app, db };

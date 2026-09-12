@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
+import { getFirestore, initializeFirestore, memoryLocalCache } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAe7WuNO19-aN8ryQoHMPBhvhI-fqOLrag",
@@ -16,11 +16,9 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 let db: any;
 
 if (typeof window !== 'undefined') {
-  // Inicialización directa para evitar que un try/catch silencioso
-  // caiga al getFirestore() por defecto que no tiene caché.
+  // Usamos memoryLocalCache para evitar por completo el bloqueo de IndexedDB en Safari
   db = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-    localCache: persistentLocalCache()
+    localCache: memoryLocalCache()
   });
 } else {
   db = getFirestore(app);

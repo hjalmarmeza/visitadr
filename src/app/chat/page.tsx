@@ -263,28 +263,7 @@ export default function DoctorViewScreen() {
     };
   }, []);
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative">
-        <div className="w-20 h-20 bg-white rounded-2xl shadow-xl flex items-center justify-center mb-6 animate-bounce">
-          <svg className="animate-spin h-10 w-10 text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">Preparando Consultorio...</h2>
-        <p className="text-slate-500 text-center mb-8">Conectando con la base de datos de forma segura</p>
-        
-        {/* PANEL DE DIAGNÓSTICO (Visible durante la carga) */}
-        <div className="w-full max-w-md bg-black/80 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl absolute bottom-10 left-1/2 -translate-x-1/2">
-          <h3 className="text-white border-b border-white/20 pb-2 mb-2 font-bold">🔴 DIAGNÓSTICO EN VIVO:</h3>
-          {logs.length === 0 ? <div className="animate-pulse">Cargando diagnóstico...</div> : logs.map((log, i) => (
-            <div key={i} className="mb-1">{log}</div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // Eliminamos el bloqueo de pantalla en Chat para entrar en 0 milisegundos
 
   if (!selectedCitaId) {
     return (
@@ -308,10 +287,23 @@ export default function DoctorViewScreen() {
           </button>
         </header>
 
-        <main className="space-y-6 flex-1 px-6 md:px-12 max-w-3xl w-full mx-auto pb-12">
+        <main className="space-y-6 flex-1">
+          <div className="max-w-4xl mx-auto px-4 w-full">
             {citas.length === 0 ? (
-              <div className="bg-white rounded-[2rem] p-10 text-center border border-black/5 shadow-sm">
-                 <p className="text-slate-500 text-xl font-medium">No hay ninguna cita programada para hoy.</p>
+              <div className="text-center py-20 bg-white/50 backdrop-blur-sm rounded-3xl border border-white/50 shadow-sm">
+                {!isLoaded ? (
+                  <>
+                    <div className="flex justify-center mb-4">
+                      <svg className="animate-spin h-10 w-10 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
+                    <p className="text-slate-500 text-xl font-medium">Sincronizando consultorio...</p>
+                  </>
+                ) : (
+                  <p className="text-slate-500 text-xl font-medium">No hay pacientes programados para hoy.</p>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-6">
@@ -345,7 +337,8 @@ export default function DoctorViewScreen() {
                 )})}
               </div>
             )}
-          </main>
+          </div>
+        </main>
       </div>
     );
   }

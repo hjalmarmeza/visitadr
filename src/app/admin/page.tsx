@@ -122,40 +122,19 @@ export default function AdminScreen() {
     setEditingCita(null);
   };
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative">
-        <div className="w-20 h-20 bg-white rounded-2xl shadow-xl flex items-center justify-center mb-6 animate-bounce">
-          <svg className="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">Conectando...</h2>
-        <p className="text-slate-500 text-center mb-8">Sincronizando con la nube de Firebase de forma segura</p>
-        
-        {/* PANEL DE DIAGNÓSTICO (Visible durante la carga) */}
-        <div className="w-full max-w-md bg-black/80 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl absolute bottom-10 left-1/2 -translate-x-1/2">
-          <h3 className="text-white border-b border-white/20 pb-2 mb-2 font-bold">🔴 DIAGNÓSTICO EN VIVO:</h3>
-          {logs.length === 0 ? <div className="animate-pulse">Cargando diagnóstico...</div> : logs.map((log, i) => (
-            <div key={i} className="mb-1">{log}</div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
+  // Eliminamos el bloqueo de pantalla completa. 
+  // ¡El panel cargará en 0 segundos!
+  
   const todayStr = getTodayLimaStr();
   const citasPendientes = citas.filter(c => c.fecha >= todayStr);
   const historialCitas = citas.filter(c => c.fecha < todayStr);
-  
   const displayCitas = activeTab === 'pendientes' ? citasPendientes : historialCitas;
 
   return (
     <div className="min-h-screen bg-transparent flex flex-col font-sans relative">
-      {/* PANEL DE DIAGNÓSTICO (Persistente después de cargar) */}
+      {/* PANEL DE DIAGNÓSTICO */}
       <div className="fixed z-50 bottom-4 right-4 max-w-xs bg-black/90 rounded-xl p-4 text-xs font-mono text-green-400 shadow-2xl">
-        <h3 className="text-white border-b border-white/20 pb-1 mb-2 font-bold">🔴 LOGS (Envía foto de esto):</h3>
+        <h3 className="text-white border-b border-white/20 pb-1 mb-2 font-bold">🔴 LOGS (IPv6 Timeout Traker):</h3>
         {logs.map((log, i) => (
           <div key={i} className="mb-1">{log}</div>
         ))}
@@ -201,10 +180,22 @@ export default function AdminScreen() {
             </div>
 
             {displayCitas.length === 0 ? (
-              <div className="bg-white rounded-[2rem] p-10 text-center border border-black/5 shadow-sm">
-                <p className="text-slate-500 text-lg">No hay citas en esta sección.</p>
-              </div>
-            ) : (
+            <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
+              {!isLoaded ? (
+                <>
+                  <div className="flex justify-center mb-4">
+                    <svg className="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                  <p className="text-slate-500 text-lg">Sincronizando base de datos...</p>
+                </>
+              ) : (
+                <p className="text-slate-500 text-lg">No hay citas en esta categoría.</p>
+              )}
+            </div>
+          ) : (
               <div className="grid grid-cols-1 gap-6">
                 {displayCitas.map((cita, index) => {
                   const theme = COLOR_MAP[cita.color || 'blue'];
